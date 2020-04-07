@@ -6,22 +6,10 @@ Things to have in mind:
     depending on hardware capabilities
 
 2:
-    The reasoning behind immediately querying the chat table for message counts
-    after each insert is so we can store the updated result on a object which
-    then can be accessed by a subscriber every second instead of querying the DB
-    every second from the subscriber. that second approach would not be so precise
-    since during an entire second multiple entries might happen and would not be
-    retrieved.
-    Eventually the ideal solution would be to subscribe directly to the DB which
-    according to my research it's not possible with SQLite.
-
-3:
     Only count one Kappa per user to avoid counting spam and only get genuine
     count distributed through out all the users
 """
 
-import time
-from random import randint
 import sqlite3
 from datetime import datetime
 
@@ -84,12 +72,6 @@ TWITCH LOGIC
 
 # Init Twitch API
 helix_api = twitch.Helix(client_id=CLIENT_ID)
-
-msg_counter = {
-    "msg_per_sec": 0,
-    "msg_per_min": 0,
-    "kappa_per_minute": 0
-}
 
 
 def kappa_per_minute(channel):
@@ -185,7 +167,6 @@ def channel_in_db(channel):
 
 
 def log_message(message):
-    global msg_counter
     global conn
 
     channel = message.channel
@@ -204,10 +185,6 @@ def log_message(message):
 
     conn.commit()
 
-    msg_counter['msg_per_sec'] = get_msg_count_per_sec(channel)
-    msg_counter['msg_per_min'] = get_msg_count_per_min(channel)
-    msg_counter['kappa_per_minute'] = kappa_per_minute(channel)
-
 
 def track_channel(channel):
     """
@@ -221,15 +198,9 @@ def track_channel(channel):
         c.execute(f"INSERT INTO channel (channel_id) VALUES ('{channel}')")
         conn.commit()
         twitch.Chat(channel=f'#{channel}', nickname=NICKNAME, oauth=OAUTH).subscribe(log_message)
-        while True:
-            print("PER MIN", msg_counter['msg_per_min'])
-            print("PER SEC", msg_counter['msg_per_sec'])
-            print("KAPPA MIN", msg_counter['kappa_per_minute'])
-
-            time.sleep(1)
     else:
         print("This channel does not exist or was already subscribed to!")
         # twitch.Chat(channel=f'#{channel}', nickname=NICKNAME, oauth=OAUTH).subscribe(log_message)
 
 
-track_channel("esl_csgo")
+# track_channel("esl_csgo")
