@@ -1,1 +1,5 @@
-env/*
+env
+.idea
+
+strafe-twitch.db.sqbpro
+strafe-twitch.db
