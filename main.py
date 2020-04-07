@@ -2,21 +2,26 @@
 Things to have in mind:
 
 1:
-Number of subscribed channels might have to be locked to a limit
-depending on hardware capabilities
+    Number of subscribed channels might have to be locked to a limit
+    depending on hardware capabilities
 
 2:
-The reasoning behind immediately querying the chat table for message counts
-after each insert is so we can store the updated result on a object which
-then can be accessed by a subscriber every second instead of querying the DB
-every second from the subscriber. that second approach would not be so precise
-since during an entire second multiple entries might happen and would not be
-retrieved.
-Eventually the ideal solution would be to subscribe directly to the DB which
-according to my research it's not possible with SQLite.
+    The reasoning behind immediately querying the chat table for message counts
+    after each insert is so we can store the updated result on a object which
+    then can be accessed by a subscriber every second instead of querying the DB
+    every second from the subscriber. that second approach would not be so precise
+    since during an entire second multiple entries might happen and would not be
+    retrieved.
+    Eventually the ideal solution would be to subscribe directly to the DB which
+    according to my research it's not possible with SQLite.
+
+3:
+    Only count one Kappa per user to avoid counting spam and only get genuine
+    count distributed through out all the users
 """
 
 import time
+from random import randint
 import sqlite3
 from datetime import datetime
 
@@ -34,12 +39,20 @@ OAUTH = 'oauth:q6x6bwve0ea0wnzucnbtxsu9zu5lvy'
 DATABASE & MODELS
 
 """
+
+# Connect DB
+# Since Twitch API is using threads we need to set
+# check_same_thread to False.
+# Also we need to search for Kappa with case sensitive on.
 conn = sqlite3.connect('strafe-twitch.db', check_same_thread=False)
 c = conn.cursor()
+c.execute("PRAGMA case_sensitive_like=ON;")
 
 
 def create_table(cur, create_table_sql):
-    """ create a table from the create_table_sql statement
+    """
+    create a table from the create_table_sql statement
+
     :param cur: Connection object
     :param create_table_sql: a CREATE TABLE statement
     :return:
@@ -74,12 +87,41 @@ helix_api = twitch.Helix(client_id=CLIENT_ID)
 
 msg_counter = {
     "msg_per_sec": 0,
-    "msg_per_min": 0
+    "msg_per_min": 0,
+    "kappa_per_minute": 0
 }
 
 
+def kappa_per_minute(channel):
+    """
+    Get Kappa per minute count.
+
+    :param channel: Twitch Channel Id
+    :return: Counter
+    """
+    now = datetime.now().strftime("%b %d %Y %H:%M")
+    c.execute(
+        f"""
+            SELECT COUNT(DISTINCT sender)
+            FROM
+                chat
+            WHERE
+                message LIKE "%Kappa%"
+                AND
+                date_time LIKE ?
+                AND 
+                channel = ?;
+        """,
+        (f"%{now}%", channel)
+    )
+
+    return c.fetchone()[0]
+
+
 def get_msg_count_per_sec(channel):
-    """ Get messages per second count
+    """
+    Get messages per second count
+
     :param channel: Twitch Channel Id
     :return: Counter
     """
@@ -99,7 +141,9 @@ def get_msg_count_per_sec(channel):
 
 
 def get_msg_count_per_min(channel):
-    """ Get messages per minute count
+    """
+    Get messages per minute count
+
     :param channel: Twitch Channel Id
     :return: Counter
     """
@@ -118,6 +162,28 @@ def get_msg_count_per_min(channel):
     return c.fetchone()[0]
 
 
+def channel_exists(channel):
+    """
+    check if channel exists on Twitch
+
+    :param channel: Channel ID
+    :return:
+    """
+    return helix_api.user(channel)
+
+
+def channel_in_db(channel):
+    """
+    check if channel exists on DB
+
+    :param channel: channel_id
+    :return: channel_id OR False
+    """
+    c.execute(f"SELECT channel_id FROM channel WHERE channel_id = '{channel}'")
+    r = c.fetchone()
+    return r[0] if r else False
+
+
 def log_message(message):
     global msg_counter
     global conn
@@ -127,7 +193,6 @@ def log_message(message):
     text = message.text
 
     now = datetime.now().strftime("%b %d %Y %H:%M:%S")
-    # now_sec = datetime.now().second
 
     c.execute(
         f"""
@@ -141,30 +206,12 @@ def log_message(message):
 
     msg_counter['msg_per_sec'] = get_msg_count_per_sec(channel)
     msg_counter['msg_per_min'] = get_msg_count_per_min(channel)
-
-
-
-
-def channel_exists(channel):
-    """ check if channel exists on Twitch
-    :param channel: Channel ID
-    :return:
-    """
-    return helix_api.user(channel)
-
-
-def channel_in_db(channel):
-    """ check if channel exists on DB
-    :param channel: channel_id
-    :return: channel_id OR False
-    """
-    c.execute(f"SELECT channel_id FROM channel WHERE channel_id = '{channel}'")
-    r = c.fetchone()
-    return r[0] if r else False
+    msg_counter['kappa_per_minute'] = kappa_per_minute(channel)
 
 
 def track_channel(channel):
-    """ Track channel and add it to DB if channel exists on twitch
+    """
+    Track channel and add it to DB if channel exists on twitch
     and it does not exist on DB
 
     :param channel: channel_id
@@ -177,9 +224,12 @@ def track_channel(channel):
         while True:
             print("PER MIN", msg_counter['msg_per_min'])
             print("PER SEC", msg_counter['msg_per_sec'])
+            print("KAPPA MIN", msg_counter['kappa_per_minute'])
+
             time.sleep(1)
     else:
         print("This channel does not exist or was already subscribed to!")
+        # twitch.Chat(channel=f'#{channel}', nickname=NICKNAME, oauth=OAUTH).subscribe(log_message)
 
 
-track_channel("mrfreshasian")
+track_channel("esl_csgo")
