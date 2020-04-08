@@ -1,0 +1,5 @@
+type Subscription {
+  messagesPerSecond(channel: String!): Int
+  messagesPerMinute(channel: String!): Int
+  kappaPerMinute(channel: String!): Int
+}

@@ -4,3 +4,6 @@ env
 strafe-twitch.db.sqbpro
 strafe-twitch.db
 *.pyc
+.DS_Store
+.python-version
+*.sqlite
