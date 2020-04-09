@@ -48,6 +48,12 @@ def channel_exists(channel):
 
 @db_session
 def log_message(message):
+    """
+    Log message in Chat DB table
+
+    :param message: Message Object with channel, sender & text
+    :return:
+    """
     channel = message.channel
     sender = message.sender
     text = message.text
@@ -73,19 +79,21 @@ def track_channel(channel):
     and it does not exist on DB
 
     :param channel: channel_id
-    :return:
+    :return: Boolean
     """
-    # if channel_exists(channel) and not db.channel_in_db(channel):
+
     if channel_exists(channel) and not Channel.get(channel_id=channel):
+        # Add channel to DB
         Channel(channel_id=channel)
         commit()
-        print("CHANNEL", Channel.get(channel_id=channel))
-        # db.insert_channel(channel)
+
+        # Subscribe to chat
         twitch.Chat(channel=f"#{channel}", nickname=NICKNAME, oauth=OAUTH).subscribe(
             log_message
         )
-    else:
-        print("This channel does not exist or was already subscribed to!")
-        twitch.Chat(channel=f"#{channel}", nickname=NICKNAME, oauth=OAUTH).subscribe(
-            log_message
-        )
+
+        return True
+
+    print("This channel does not exist on Twitch or was already subscribed to!")
+
+    return False
