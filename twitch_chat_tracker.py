@@ -22,9 +22,9 @@ from pony.orm import *
 ENVIRONMENT VARIABLES
 
 """
-CLIENT_ID = 'lnkcgelww2qsqynefsgk487pfuk1wx'
-NICKNAME = 'peacewarlando'
-OAUTH = 'oauth:q6x6bwve0ea0wnzucnbtxsu9zu5lvy'
+CLIENT_ID = "lnkcgelww2qsqynefsgk487pfuk1wx"
+NICKNAME = "peacewarlando"
+OAUTH = "oauth:q6x6bwve0ea0wnzucnbtxsu9zu5lvy"
 
 
 """
@@ -56,7 +56,7 @@ def log_message(message):
         channel=Channel.get(channel_id=channel),
         sender=sender,
         message=text,
-        date_time=datetime.now()
+        date_time=datetime.now(),
     )
 
     commit()
@@ -81,8 +81,11 @@ def track_channel(channel):
         commit()
         print("CHANNEL", Channel.get(channel_id=channel))
         # db.insert_channel(channel)
-        twitch.Chat(channel=f'#{channel}', nickname=NICKNAME, oauth=OAUTH).subscribe(log_message)
+        twitch.Chat(channel=f"#{channel}", nickname=NICKNAME, oauth=OAUTH).subscribe(
+            log_message
+        )
     else:
         print("This channel does not exist or was already subscribed to!")
-        twitch.Chat(channel=f'#{channel}', nickname=NICKNAME, oauth=OAUTH).subscribe(log_message)
-
+        twitch.Chat(channel=f"#{channel}", nickname=NICKNAME, oauth=OAUTH).subscribe(
+            log_message
+        )

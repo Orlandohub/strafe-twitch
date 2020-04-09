@@ -7,10 +7,12 @@ from .twitch_chat_tracker import track_channel
 
 routes = web.RouteTableDef()
 
-@routes.get('/')
+
+@routes.get("/")
 async def hello(request):
     track_channel("peacewarlando")
     return web.Response(text="Hello, world")
+
 
 def run() -> None:
     """
@@ -34,4 +36,3 @@ def run() -> None:
             subscription_ws_endpoint="/ws",
         )
     )
-    

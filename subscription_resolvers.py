@@ -6,7 +6,7 @@ from tartiflette import Subscription
 from .pony_db import (
     query_message_per_second,
     query_message_per_minute,
-    query_kappa_per_minute
+    query_kappa_per_minute,
 )
 
 
@@ -20,9 +20,7 @@ async def subscribe_subscription_messages_per_second(
 
     channel_id = args["channel"]
     while True:
-        yield {
-            "messagesPerSecond": query_message_per_second(channel_id)
-        }
+        yield {"messagesPerSecond": query_message_per_second(channel_id)}
         await asyncio.sleep(0.1)
 
 
@@ -36,9 +34,7 @@ async def subscribe_subscription_messages_per_minute(
 
     channel_id = args["channel"]
     while True:
-        yield {
-            "messagesPerMinute": query_message_per_minute(channel_id)
-        }
+        yield {"messagesPerMinute": query_message_per_minute(channel_id)}
         await asyncio.sleep(0.1)
 
 
@@ -52,7 +48,5 @@ async def subscribe_subscription_kappa_per_minute(
 
     channel_id = args["channel"]
     while True:
-        yield {
-            "kappaPerMinute": query_kappa_per_minute(channel_id)
-        }
+        yield {"kappaPerMinute": query_kappa_per_minute(channel_id)}
         await asyncio.sleep(0.3)
