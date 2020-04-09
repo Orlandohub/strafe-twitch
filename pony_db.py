@@ -16,8 +16,31 @@ class Chat(db.Entity):
 
 # TODO: This code is not respecting the DRY principle
 @db_session
+def query_kappa_per_minute(channel):
+  query_channel = Chat.select(lambda m: m.channel.channel_id == channel)
+  
+  query_date = query_channel.filter(
+      lambda m: m.date_time.date() == datetime.now().date()
+  )
+
+  query_time_hour = query_date.filter(
+      lambda m: m.date_time.hour == datetime.now().hour
+  )
+
+  query_time_minute = query_time_hour.filter(
+      lambda m: m.date_time.minute == datetime.now().minute
+  )
+
+  query_kappa = select(
+    chat.sender for chat in query_time_minute if 'Kappa' in chat.message
+  ).count()
+
+  return query_kappa
+
+
+
+@db_session
 def query_message_per_minute(channel):
-  print(channel)
   query = Chat.select(lambda m: m.channel.channel_id == channel)
   query_date = query.filter(
       lambda m: m.date_time.date() == datetime.now().date()
@@ -35,7 +58,6 @@ def query_message_per_minute(channel):
 
 @db_session
 def query_message_per_second(channel):
-  print(channel)
   query = Chat.select(lambda m: m.channel.channel_id == channel)
   query_date = query.filter(
       lambda m: m.date_time.date() == datetime.now().date()
