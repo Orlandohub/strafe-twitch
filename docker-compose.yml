@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+
+  twitch_chat:
+    build:
+      context: ./services/twitch_chat
+      dockerfile: Dockerfile
+    volumes:
+      - './services/twitch_chat:/usr/src/app'
+    ports:
+      - 8081:8080
+    environment:
+      - AIOHTTP_ENV=development
+      - CLIENT_ID=lnkcgelww2qsqynefsgk487pfuk1wx
+      - NICKNAME=peacewarlando
+      - OAUTH=oauth:q6x6bwve0ea0wnzucnbtxsu9zu5lvy

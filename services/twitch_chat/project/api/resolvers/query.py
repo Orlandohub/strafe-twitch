@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from tartiflette import Resolver
 
-from .twitch_chat_tracker import track_channel
+from ..twitch_chat_tracker import track_channel
 
 
 @Resolver("Query._")

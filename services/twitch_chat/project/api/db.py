@@ -1,5 +1,8 @@
 """
-DATABASE & MODELS
+DEPRECATED
+
+Moved away from raw sqlite connection since it generated
+issues with multi threads
 
 """
 

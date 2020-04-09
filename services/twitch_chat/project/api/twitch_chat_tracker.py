@@ -10,21 +10,20 @@ Things to have in mind:
     count distributed through out all the users
 """
 
+import os
 from datetime import datetime
 
 import twitch
-
-# from .db import db
-from .pony_db import db, Chat, Channel, query_message_per_second
+from .pony_db import db, Chat, Channel, query_message_per_second, log_message
 from pony.orm import *
 
 """
 ENVIRONMENT VARIABLES
 
 """
-CLIENT_ID = "lnkcgelww2qsqynefsgk487pfuk1wx"
-NICKNAME = "peacewarlando"
-OAUTH = "oauth:q6x6bwve0ea0wnzucnbtxsu9zu5lvy"
+CLIENT_ID = os.environ.get("CLIENT_ID")
+NICKNAME = os.environ.get("NICKNAME")
+OAUTH = os.environ.get("OAUTH")
 
 
 """
@@ -44,32 +43,6 @@ def channel_exists(channel):
     :return:
     """
     return helix_api.user(channel)
-
-
-@db_session
-def log_message(message):
-    """
-    Log message in Chat DB table
-
-    :param message: Message Object with channel, sender & text
-    :return:
-    """
-    channel = message.channel
-    sender = message.sender
-    text = message.text
-
-    chat = Chat(
-        channel=Channel.get(channel_id=channel),
-        sender=sender,
-        message=text,
-        date_time=datetime.now(),
-    )
-
-    commit()
-
-    # query_time_second = query_message_per_second(channel)
-
-    # print("msg per sec", query_time_second)
 
 
 @db_session

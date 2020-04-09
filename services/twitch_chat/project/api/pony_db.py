@@ -1,5 +1,7 @@
+import os
 from pony.orm import *
 from datetime import datetime
+import twitch
 
 db = Database()
 
@@ -14,6 +16,28 @@ class Chat(db.Entity):
     date_time = Required(datetime, precision=0)
     sender = Required(str)
     message = Required(str)
+
+
+@db_session
+def log_message(message):
+    """
+    Log message in Chat DB table
+
+    :param message: Message Object with channel, sender & text
+    :return:
+    """
+    channel = message.channel
+    sender = message.sender
+    text = message.text
+
+    chat = Chat(
+        channel=Channel.get(channel_id=channel),
+        sender=sender,
+        message=text,
+        date_time=datetime.now(),
+    )
+
+    commit()
 
 
 # TODO: This code is not respecting the DRY principle
@@ -74,6 +98,22 @@ def query_message_per_second(channel):
     ).count()
 
     return query_time_second
+
+
+@db_session
+async def init_subscriptions(app):
+    """
+    Once the server starts subscribe to all channels in DB
+    """
+    NICKNAME = os.environ.get("NICKNAME")
+    OAUTH = os.environ.get("OAUTH")
+
+    channels = Channel.select()[:]
+
+    for channel in channels:
+        twitch.Chat(
+            channel=f"#{channel.channel_id}", nickname=NICKNAME, oauth=OAUTH
+        ).subscribe(log_message)
 
 
 db.bind(provider="sqlite", filename="database.sqlite", create_db=True)
