@@ -119,4 +119,3 @@ async def init_subscriptions(app):
 def generate_db(db_path):
     db.bind(provider="sqlite", filename=db_path, create_db=True)
     db.generate_mapping(create_tables=True)
-
