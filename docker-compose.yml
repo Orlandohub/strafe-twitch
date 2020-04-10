@@ -12,6 +12,7 @@ services:
       - 8081:8080
     environment:
       - AIOHTTP_ENV=development
+      - DB=database.sqlite
       - CLIENT_ID=lnkcgelww2qsqynefsgk487pfuk1wx
       - NICKNAME=peacewarlando
       - OAUTH=oauth:q6x6bwve0ea0wnzucnbtxsu9zu5lvy

@@ -116,5 +116,7 @@ async def init_subscriptions(app):
         ).subscribe(log_message)
 
 
-db.bind(provider="sqlite", filename="database.sqlite", create_db=True)
-db.generate_mapping(create_tables=True)
+def generate_db(db_path):
+    db.bind(provider="sqlite", filename=db_path, create_db=True)
+    db.generate_mapping(create_tables=True)
+

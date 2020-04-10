@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any, AsyncGenerator, Dict, Optional
 
 from tartiflette import Subscription
-from ..pony_db import (
+from ..models import (
     query_message_per_second,
     query_message_per_minute,
     query_kappa_per_minute,

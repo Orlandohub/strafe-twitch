@@ -1,3 +1,3 @@
 #!/bin/sh
 
-python -m project
+python -m project run

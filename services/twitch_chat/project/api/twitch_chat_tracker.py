@@ -14,7 +14,7 @@ import os
 from datetime import datetime
 
 import twitch
-from .pony_db import db, Chat, Channel, query_message_per_second, log_message
+from .models import db, Chat, Channel, query_message_per_second, log_message
 from pony.orm import *
 
 """

@@ -4,15 +4,21 @@ from aiohttp import web
 from tartiflette_aiohttp import register_graphql_handlers
 
 from .twitch_chat_tracker import track_channel
-from .pony_db import init_subscriptions
+from .models import generate_db, init_subscriptions
 
 
-def run() -> None:
+def run_app() -> None:
     """
     Entry point of the application.
     """
 
+    generate_db(os.environ.get("DB"))
+
     app = web.Application()
+
+    # Once the server starts connect with all
+    # subscribed chats and log messages on the
+    # Chat table
     app.on_startup.append(init_subscriptions)
 
     web.run_app(
